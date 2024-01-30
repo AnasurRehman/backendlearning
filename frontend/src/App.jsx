@@ -5,10 +5,10 @@ import axios from "axios";
 function App() {
   useEffect(() => {
     axios
-      .get("http://localhost:4000/jokes")
+      .get("/api/jokes")
       .then((res) => setJokes(res.data))
       .catch((err) => console.error(err));
-  });
+  }, []);
   const [jokes, setJokes] = useState([]);
   return (
     <>
