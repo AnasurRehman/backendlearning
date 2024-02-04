@@ -11,8 +11,8 @@ const options = {
 
 const generateAccessandRereshToken = async (user) => {
   try {
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
     user.save({ validateBeforeSave: false });
@@ -97,7 +97,6 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { email, password, userName } = req.body;
 
-  console.log(req.body);
   const user = await User.findOne({ $or: [{ userName }, { email }] });
 
   if (!userName && !email) {
@@ -113,12 +112,11 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!passwordValidation) {
     throw new ApiError(404, "Incorrect password");
   }
-  const { refreshToken, accessToken } = generateAccessandRereshToken(user);
+  const { refreshToken, accessToken } = await generateAccessandRereshToken(
+    user
+  );
 
-  console.log(refreshToken, accessToken);
-
-  delete user.password;
-  delete user.refreshToken;
+  const { password: _, refreshToken: __, ...sanctionedUser } = user.toObject();
 
   return res
     .status(200)
@@ -127,7 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResonse(
         200,
-        { user: user, refreshToken, accessToken },
+        { user: sanctionedUser, refreshToken, accessToken },
         "Login Successfully"
       )
     );
